@@ -2,9 +2,9 @@ import React from "react";
 import { FaUserCircle, FaEnvelope, FaLock } from "react-icons/fa";
 import { useFormik } from "formik";
 import UpdatePassword from "./UpdatePassword";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
-import { updateProfileAPI } from "../../services/users/userService";
+import { getProfileAPI, updateProfileAPI } from "../../services/users/userService";
 import { logoutAction } from "../../redux/slice/authSlice";
 import AlertMessage from "../Alert/AlertMessage";
 
@@ -13,13 +13,20 @@ const UserProfile = () => {
     mutationFn: updateProfileAPI,
     mutationKey: ["update-profile"],
 })
+ //fetching
+ const { data, isError:profileError, isLoading, isFetched, error:profileErr, refetch } = useQuery({
+  queryFn: getProfileAPI,
+  queryKey: ["get-profile"],
+});
+
 const dispatch = useDispatch();
 
   const formik = useFormik({
     initialValues: {
-      email: "",
-      username: "",
+      email: data?.email || '',
+      username: data?.username || '',
     },
+    enableReinitialize: true, // This allows formik to reinitialize when initialValues change
 
     //Submit
     onSubmit: (values) => {
@@ -38,8 +45,13 @@ const dispatch = useDispatch();
     <>
       <div className="max-w-4xl mx-auto my-10 p-8 bg-white rounded-lg shadow-md">
         <h1 className="mb-2 text-2xl text-center font-extrabold">
-          Welcome 
-          {/* <span className="text-gray-500 text-sm ml-2">info@gmail.com</span> */}
+          Welcome {' '}
+          {data && (
+            <>
+            {data.username}
+          <span className="text-gray-500 text-sm ml-2">{data.email}</span>
+          </>
+        )}
         </h1>
         <h3 className="text-xl font-semibold text-gray-800 mb-4">
           Update Profile
